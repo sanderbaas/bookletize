@@ -1,8 +1,8 @@
 {
   "license": "MIT",
   "scripts": {
-    "dev": "parcel src/index.html --dist-dir docs",
-    "build": "parcel build src/index.html --dist-dir docs"
+    "dev": "parcel src/index.html --dist-dir docs --public-url /bookletize",
+    "build": "parcel build src/index.html --dist-dir docs --public-url /bookletize"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.13",
