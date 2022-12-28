@@ -5,17 +5,38 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Tailwind CSS Boilerplate</title>
+    <title>PDF Booklet Converter</title>
 
     <link rel="stylesheet" href="css/main.css" />
+    <script type="module" src="js/app.js" /></script>
   </head>
 
   <body class="py-16 bg-gray-200">
-    <h1 class="mb-4 text-4xl text-center text-gray-800 font-bold font-sans">
-      Tailwind CSS Boilerplate
-    </h1>
-    <p class="text-sm text-center text-gray-600 font-sans">
-      Get started by editing index.html
-    </p>
+    <div id="app" x-data="app()" class="container mx-auto px-4">
+      <h1 x-text="title" class="mb-4 text-4xl text-center text-gray-800 font-bold font-sans"></h1>
+      <label class="block">
+        <span class="sr-only">Choose PDF file</span>
+        <input accept=".pdf" type="file"
+               x-on:change="files = Object.values($event.target.files)"
+               class="block w-full text-sm text-slate-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-violet-50 file:text-violet-700
+                      hover:file:bg-violet-100"
+        />
+      </label>
+      <div>
+        <template x-if="files.length == 1">
+          <button x-on:click="convertPdf()"
+                  class="block text-sm text-slate-500
+                      mr-4 py-2 px-4
+                      rounded-full border-0
+                      text-sm font-semibold
+                      bg-violet-700 text-violet-50
+                      hover:bg-violet-500">Convert to Booklet</button>
+        </template>
+      </div>
+    </div>
   </body>
 </html>
