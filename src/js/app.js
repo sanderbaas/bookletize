@@ -3,9 +3,14 @@ import { PDFDocument, PageSizes } from 'pdf-lib';
 
 window.Alpine = Alpine
 
-window.convert = async function(content) {
-    const sourceDoc = await PDFDocument.load(content);
+window.convert = async function(content, cbError) {
+    const sourceDoc = await PDFDocument.load(content, { ignoreEncryption: true });
     const targetDoc = await PDFDocument.create();
+
+    if (sourceDoc.isEncrypted) {
+        cbError('The document is encrypted.');
+        return;
+    }
 
     let numPages = sourceDoc.getPageCount();
     let neededExtraPages = numPages % 4;
@@ -17,7 +22,6 @@ window.convert = async function(content) {
     numPages = sourceDoc.getPageCount();
 
     let numSets = numPages / 4;
-    let sourcePages = sourceDoc.getPages();
     let pageNum1, pageNum2, pageNum3, pageNum4;
 
     for (let j = 0; j < numSets; j++) {
@@ -43,6 +47,7 @@ window.convert = async function(content) {
     a.addEventListener('click', (e) => {
         setTimeout(() => URL.revokeObjectURL(a.href), 30 * 1000);
     });
+
     a.click();
 };
 
@@ -50,11 +55,15 @@ window.app = function () {
     return {
         title: 'PDF Booklet Converter',
 
+        showEncryptionWarning: false,
+
         files: [],
 
         async convertPdf() {
-            console.log('Start conversion to PDF')
-            ;
+            console.log('Start conversion to PDF');
+
+            this.showEncryptionWarning = false;
+
             if (this.files.length === 0) {
                 console.log('No file selected.');
                 return;
@@ -63,16 +72,21 @@ window.app = function () {
             let file = this.files[0];
 
             if (file.type && !file.type.startsWith('application/pdf')) {
-                console.log('File is not an image.', file.type, file);
+                console.log('File is not a PDF document.', file.type, file);
                 return;
             }
 
             const reader = new FileReader();
 
+            let that = this;
+
             reader.addEventListener("load", () => {
                 // convert image file to base64 string
-                // console.log(reader.result);
-                window.convert(reader.result);
+               window.convert(reader.result, function(error) {
+                   if (error === 'The document is encrypted.') {
+                       that.showEncryptionWarning = true;
+                   }
+               });
             }, false);
 
             reader.readAsDataURL(file);

@@ -30,11 +30,16 @@
         <template x-if="files.length == 1">
           <button x-on:click="convertPdf()"
                   class="block text-sm text-slate-500
-                      mr-4 py-2 px-4
+                      mr-4 py-2 px-4 my-4
                       rounded-full border-0
                       text-sm font-semibold
                       bg-violet-700 text-violet-50
                       hover:bg-violet-500">Convert to Booklet</button>
+        </template>
+        <template x-if="showEncryptionWarning">
+          <p>The PDF document is encrypted. If you have permission, use a service like
+          <a class="text-violet-500" target="_blank" href="https://smallpdf.com/unlock-pdf">Small PDF</a> to decrypt it.
+          </p>
         </template>
       </div>
     </div>

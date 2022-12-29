@@ -538,14 +538,15 @@ var _alpinejsDefault = parcelHelpers.interopDefault(_alpinejs);
 var _pdfLib = require("pdf-lib");
 window.Alpine = (0, _alpinejsDefault.default);
 window.convert = async function(content) {
-    const sourceDoc = await (0, _pdfLib.PDFDocument).load(content);
+    const sourceDoc = await (0, _pdfLib.PDFDocument).load(content, {
+        ignoreEncryption: true
+    });
     const targetDoc = await (0, _pdfLib.PDFDocument).create();
     let numPages = sourceDoc.getPageCount();
     let neededExtraPages = numPages % 4;
     for(let i = 0; i < neededExtraPages; i++)sourceDoc.addPage();
     numPages = sourceDoc.getPageCount();
     let numSets = numPages / 4;
-    let sourcePages = sourceDoc.getPages();
     let pageNum1, pageNum2, pageNum3, pageNum4;
     for(let j = 0; j < numSets; j++){
         pageNum1 = numPages - j * 2 - 1;
@@ -592,8 +593,8 @@ window.app = function() {
             const reader = new FileReader();
             reader.addEventListener("load", ()=>{
                 // convert image file to base64 string
-                // console.log(reader.result);
-                window.convert(reader.result);
+                console.log(reader.result);
+            // window.convert(reader.result);
             }, false);
             reader.readAsDataURL(file);
         }

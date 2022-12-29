@@ -1,7 +1,7 @@
 {
   "license": "MIT",
   "scripts": {
-    "dev": "parcel src/index.html --dist-dir docs --public-url /bookletize",
+    "dev": "parcel src/index.html",
     "build": "parcel build src/index.html --dist-dir docs --public-url /bookletize"
   },
   "devDependencies": {
