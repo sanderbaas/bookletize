@@ -3,17 +3,22 @@ import { PDFDocument, PageSizes } from 'pdf-lib';
 
 window.Alpine = Alpine
 
-window.convert = async function(content, cbError) {
+window.convert = async function(content, cbError, cbLogMessage) {
     const sourceDoc = await PDFDocument.load(content, { ignoreEncryption: true });
     const targetDoc = await PDFDocument.create();
 
     if (sourceDoc.isEncrypted) {
+        cbLogMessage('The document is encrypted, stopping.');
         cbError('The document is encrypted.');
         return;
     }
 
     let numPages = sourceDoc.getPageCount();
     let neededExtraPages = numPages % 4;
+
+    if (neededExtraPages > 0) {
+        cbLogMessage(neededExtraPages + ' extra pages needed.')
+    }
 
     for (let i = 0; i < neededExtraPages; i++) {
         sourceDoc.addPage();
@@ -24,7 +29,11 @@ window.convert = async function(content, cbError) {
     let numSets = numPages / 4;
     let pageNum1, pageNum2, pageNum3, pageNum4;
 
+    cbLogMessage('The document consists of ' + numSets + ' sets of 4 pages.');
+
     for (let j = 0; j < numSets; j++) {
+        cbLogMessage('Moving pages for set #' + (j+1));
+
         pageNum1 = numPages - (j * 2) - 1;
         pageNum2 = (j * 2);
         pageNum3 = (j * 2) + 1;
@@ -38,7 +47,11 @@ window.convert = async function(content, cbError) {
         targetDoc.addPage(page4);
     }
 
+    cbLogMessage('Saving document, this may take a while.');
+
     const base64DataUri = await targetDoc.saveAsBase64({ dataUri: true })
+
+    cbLogMessage('Finished saving of document.');
 
     const a = document.createElement('a');
     a.download = 'booklet.pdf';
@@ -57,22 +70,26 @@ window.app = function () {
 
         showEncryptionWarning: false,
 
+        logMessages: [],
+
         files: [],
 
         async convertPdf() {
-            console.log('Start conversion to PDF');
+            this.logMessages = [];
+
+            this.logMessages.push('Start conversion to PDF.');
 
             this.showEncryptionWarning = false;
 
             if (this.files.length === 0) {
-                console.log('No file selected.');
+                this.logMessages.push('No file selected.');
                 return;
             }
 
             let file = this.files[0];
 
             if (file.type && !file.type.startsWith('application/pdf')) {
-                console.log('File is not a PDF document.', file.type, file);
+                this.logMessages.push('File is not a PDF document.', file.type, file);
                 return;
             }
 
@@ -81,12 +98,17 @@ window.app = function () {
             let that = this;
 
             reader.addEventListener("load", () => {
+                this.logMessages.push('File loaded');
                 // convert image file to base64 string
                window.convert(reader.result, function(error) {
-                   if (error === 'The document is encrypted.') {
-                       that.showEncryptionWarning = true;
+                       if (error === 'The document is encrypted.') {
+                           that.showEncryptionWarning = true;
+                       }
+                   },
+                   function(logMessage) {
+                       that.logMessages.push(logMessage);
                    }
-               });
+               );
             }, false);
 
             reader.readAsDataURL(file);
